@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderne Todo-Liste für Einschulung</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #fa0d05;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .input-container {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px 0 0 5px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            border-color: #667eea;
+        }
+        button {
+            padding: 15px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background: #f8f9fa;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        li:hover {
+            background: #e9ecef;
+        }
+        li.completed {
+            background: #d4edda;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+        .checkbox {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+        .text {
+            flex: 1;
+            font-size: 16px;
+        }
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+            transition: background 0.3s;
+        }
+        .delete-btn:hover {
+            background: #c82333;
+        }
+        .timer {
+            text-align: center;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            color: #ea6666;
+        }
+        .timer.expired {
+            color: #dc3545;
+        }
+        .suggestions {
+            margin-bottom: 20px;
+        }
+        .suggestions h3 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .suggestion-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        .suggestion-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .suggestion-btn:hover {
+            background: #218838;
+        }
+        .option-btns {
+            display: flex;
+            gap: 5px;
+        }
+        .option-btn {
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 3px;
+        }
+        .add-option {
+            background: #28a745;
+            color: white;
+        }
+        .remove-option {
+            background: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div style="text-align: right; padding: 10px;">
+        <a href="/logout" style="
+            background-color: #ff4d4d; 
+            color: white; 
+            padding: 8px 15px; 
+            text-decoration: none; 
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+        ">Abmelden</a>
+    </div>
+    <div class="container">
+        <h1>📚 Einschulungs-Todo-Liste</h1>
+        <div class="timer" id="timer">Countdown bis 01.08.2026: <span id="countdown"></span></div>
+        <div class="suggestions">
+            <h3>Schnell-Vorschläge für Einschulung:</h3>
+            <div class="suggestion-btns" id="suggestion-btns"></div>
+        </div>
+        <div class="input-container">
+            <input type="text" id="todo-input" placeholder="Neue Aufgabe hinzufügen...">
+            <button id="add-btn">Hinzufügen</button>
+        </div>
+        <ul id="todo-list"></ul>
+        <div class="empty-message" id="empty-message">Keine Aufgaben vorhanden. Füge eine neue hinzu!</div>
+    </div>
+
+    <script>
+        const todoInput = document.getElementById('todo-input');
+        const addBtn = document.getElementById('add-btn');
+        const todoList = document.getElementById('todo-list');
+        const emptyMessage = document.getElementById('empty-message');
+        const countdownEl = document.getElementById('countdown');
+        const timerEl = document.getElementById('timer');
+        const suggestionBtns = document.getElementById('suggestion-btns');
+
+        // Load todos from localStorage
+        let todos = JSON.parse(localStorage.getItem('todos')) || [];
+
+        // Suggestions for school enrollment
+        const suggestions = [
+            "Schulranzen kaufen",
+            "Schuluniform bestellen",
+            "Arzttermin für Schuluntersuchung vereinbaren",
+            "Schulmaterialien besorgen (Hefte, Stifte, etc.)",
+            "Schule anmelden",
+            "Elternabend besuchen",
+            "Kleidung für den ersten Schultag kaufen",
+            "Foto für Schulausweis machen",
+            "Schulweg üben",
+            "Notfallkontakte aktualisieren",
+            "Schulbusanmeldung",
+            "Schulversicherung abschließen",
+            "Schulbücher vorbestellen",
+            "Schulessen anmelden",
+            "Schulhof erkunden",
+            "Erste Schulaufgaben üben",
+            "Notizbuch für Eltern-Lehrer-Gespräche vorbereiten",
+            "Schulregeln kennenlernen",
+            "Abschiedsfeier planen",
+            "Freundschaften knüpfen"
+        ];
+
+        function renderSuggestions() {
+            suggestionBtns.innerHTML = '';
+            const availableSuggestions = suggestions.filter(suggestion => !todos.some(todo => todo.text === suggestion));
+            availableSuggestions.forEach(suggestion => {
+                const btn = document.createElement('button');
+                btn.className = 'suggestion-btn';
+                btn.textContent = suggestion;
+                btn.addEventListener('click', () => showOptions(suggestion, btn));
+                suggestionBtns.appendChild(btn);
+            });
+        }
+
+        function showOptions(suggestion, btn) {
+            btn.style.display = 'none';
+            const optionContainer = document.createElement('div');
+            optionContainer.className = 'option-btns';
+            optionContainer.innerHTML = `
+                <button class="option-btn add-option" data-action="add">Hinzufügen</button>
+                <button class="option-btn remove-option" data-action="remove">Entfernen</button>
+            `;
+            btn.parentNode.insertBefore(optionContainer, btn.nextSibling);
+
+            optionContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('option-btn')) {
+                    const action = e.target.dataset.action;
+                    if (action === 'add') {
+                        addSuggestion(suggestion);
+                    } else if (action === 'remove') {
+                        // Entferne den Vorschlag aus der Liste
+                        const index = suggestions.indexOf(suggestion);
+                        if (index > -1) {
+                            suggestions.splice(index, 1);
+                        }
+                    }
+                    optionContainer.remove();
+                    btn.style.display = 'inline-block';
+                    renderSuggestions(); // Aktualisiere, um die Liste zu refreshen
+                }
+            });
+        }
+
+        function addSuggestion(text) {
+            if (!todos.some(todo => todo.text === text)) {
+                todos.push({ text, completed: false });
+                saveTodos();
+                renderTodos();
+                renderSuggestions(); // Aktualisiere Vorschläge
+            }
+        }
+
+        function updateCountdown() {
+            const targetDate = new Date('2026-08-01T00:00:00');
+            const now = new Date();
+            const diff = targetDate - now;
+
+            if (diff <= 0) {
+                countdownEl.textContent = "Zeit abgelaufen! Viel Erfolg beim ersten Schultag!";
+                timerEl.classList.add('expired');
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            countdownEl.textContent = `${days} Tage, ${hours} Std, ${minutes} Min, ${seconds} Sek`;
+        }
+
+        function renderTodos() {
+            todoList.innerHTML = '';
+            todos.forEach((todo, index) => {
+                const li = document.createElement('li');
+                li.className = todo.completed ? 'completed' : '';
+                li.innerHTML = `
+                    <input type="checkbox" class="checkbox" ${todo.completed ? 'checked' : ''} data-index="${index}">
+                    <span class="text">${todo.text}</span>
+                    <button class="delete-btn" data-index="${index}">Löschen</button>
+                `;
+                todoList.appendChild(li);
+            });
+            updateEmptyMessage();
+        }
+
+        function updateEmptyMessage() {
+            emptyMessage.style.display = todos.length === 0 ? 'block' : 'none';
+        }
+
+        function addTodo() {
+            const text = todoInput.value.trim();
+            if (text) {
+                todos.push({ text, completed: false });
+                todoInput.value = '';
+                saveTodos();
+                renderTodos();
+            }
+        }
+
+        function toggleTodo(index) {
+            todos[index].completed = !todos[index].completed;
+            saveTodos();
+            renderTodos();
+        }
+
+        function deleteTodo(index) {
+            todos.splice(index, 1);
+            saveTodos();
+            renderTodos();
+        }
+
+        function saveTodos() {
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+
+        addBtn.addEventListener('click', addTodo);
+        todoInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addTodo();
+            }
+        });
+
+        todoList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('checkbox')) {
+                const index = e.target.dataset.index;
+                toggleTodo(index);
+            } else if (e.target.classList.contains('delete-btn')) {
+                const index = e.target.dataset.index;
+                deleteTodo(index);
+            }
+        });
+
+        // Initial render
+        renderTodos();
+        renderSuggestions();
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
