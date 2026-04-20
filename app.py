@@ -17,7 +17,7 @@ def home():
     
     # Aufgaben aus Supabase holen
     try:
-        response = supabase.table("todos").select("*").execute()
+        response = supabase.table("todo").select("*").execute()
         todos = response.data
     except Exception as e:
         print(f"Fehler: {e}")
