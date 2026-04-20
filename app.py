@@ -1,5 +1,5 @@
+import os
 import sqlite3
-
 from flask import Flask, redirect, render_template, request, session, url_for
 
 app = Flask(__name__)
@@ -40,12 +40,14 @@ def add():
 def login():
     if request.method == "POST":
         pw = request.form.get("passwort")
-        if pw == "Lina08122019.":
+        richtiges_pw = os.getenv("MEIN_APP_PASSWORT", "Lina08122019.")
+        
+        if pw == richtiges_pw:
             session['eingeloggt'] = True
             return redirect("/")
         else:
             return "Falsches Passwort!"
-    
+            
     return render_template("login.html")
 @app.route("/logout")
 def logout():
