@@ -23,7 +23,7 @@ def home():
         print(f"Fehler: {e}")
         todo = []
         
-    return render_template("index.html", todo=todo)
+    return render_template("index.html", todos=todo)
 
 @app.route("/add", methods=["POST"])
 def add():
@@ -36,7 +36,7 @@ def add():
 @app.route("/delete/<id>")
 def delete(id):
     # Aufgabe löschen
-    supabase.table("todos").delete().eq("id", id).execute()
+    supabase.table("todo").delete().eq("id", id).execute()
     return redirect("/")
 
 @app.route("/login", methods=["GET", "POST"])
