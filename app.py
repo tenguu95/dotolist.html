@@ -18,19 +18,19 @@ def home():
     # Aufgaben aus Supabase holen
     try:
         response = supabase.table("todo").select("*").execute()
-        todos = response.data
+        todo = response.data
     except Exception as e:
         print(f"Fehler: {e}")
-        todos = []
+        todo = []
         
-    return render_template("index.html", todos=todos)
+    return render_template("index.html", todo=todo)
 
 @app.route("/add", methods=["POST"])
 def add():
     aufgabe = request.form.get("aufgabe")
     if aufgabe:
         # In Supabase speichern
-        supabase.table("todos").insert({"task": aufgabe}).execute()
+        supabase.table("todo").insert({"task": aufgabe}).execute()
     return redirect("/")
 
 @app.route("/delete/<id>")
