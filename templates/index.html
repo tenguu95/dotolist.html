@@ -173,19 +173,35 @@
         ">Abmelden</a>
     </div>
     <div class="container">
-        <h1>📚 Einschulungs-Todo-Liste</h1>
-        <div class="timer" id="timer">Countdown bis 01.08.2026: <span id="countdown"></span></div>
-        <div class="suggestions">
-            <h3>Schnell-Vorschläge für Einschulung:</h3>
-            <div class="suggestion-btns" id="suggestion-btns"></div>
-        </div>
-        <div class="input-container">
-            <input type="text" id="todo-input" placeholder="Neue Aufgabe hinzufügen...">
-            <button id="add-btn">Hinzufügen</button>
-        </div>
-        <ul id="todo-list"></ul>
-        <div class="empty-message" id="empty-message">Keine Aufgaben vorhanden. Füge eine neue hinzu!</div>
+    <h1>🎒 Einschulungs-Todo-Liste</h1>
+    
+    <div class="timer" id="timer">Countdown bis 01.08.2026: <span id="countdown"></span></div>
+
+    <div class="suggestions">
+        <h3>Schnell-Vorschläge für Einschulung:</h3>
+        <div class="suggestion-btns" id="suggestion-btns"></div>
     </div>
+
+    <div class="input-container">
+        <form action="/add" method="POST" style="display: flex; width: 100%; gap: 10px;">
+            <input type="text" name="aufgabe" placeholder="Neue Aufgabe hinzufügen..." required style="flex-grow: 1; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+            <button type="submit" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">Hinzufügen</button>
+        </form>
+    </div>
+
+    <ul id="todo-list" style="list-style: none; padding: 0;">
+        {% for t in todos %}
+        <li style="background: white; margin-bottom: 10px; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <span style="font-size: 1.1rem;">{{ t.task }}</span>
+            <a href="/delete/{{ t.id }}" style="color: #ff4d4d; text-decoration: none; font-size: 1.2rem; font-weight: bold;">❌</a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    {% if not todos %}
+    <div class="empty-message" style="text-align: center; color: #777; margin-top: 20px;">Keine Aufgaben vorhanden. Füge eine neue hinzu!</div>
+    {% endif %}
+</div>
 
     <script>
         const todoInput = document.getElementById('todo-input');
